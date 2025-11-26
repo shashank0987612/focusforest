@@ -1,0 +1,2392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌳 FocusForest - Ultimate Study Companion</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Poppins', sans-serif; }
+        
+        :root {
+            --bg-primary: #0f0f23;
+            --bg-secondary: #1a1a2e;
+            --bg-card: #16213e;
+            --accent-1: #667eea;
+            --accent-2: #764ba2;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+        }
+        
+        .light-mode {
+            --bg-primary: #f0f4f8;
+            --bg-secondary: #ffffff;
+            --bg-card: #ffffff;
+            --text-primary: #1a1a2e;
+            --text-secondary: #64748b;
+        }
+        
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+        
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .light-mode .glass {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Tree Styles */
+        .tree-container {
+            position: relative;
+            width: 200px;
+            height: 280px;
+        }
+        
+        .tree-ground {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 20px;
+            background: linear-gradient(to right, #3d2914, #5d4037, #3d2914);
+            border-radius: 50%;
+        }
+        
+        .tree-trunk {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 24px;
+            background: linear-gradient(to right, #4a3728, #6d4c41, #4a3728);
+            border-radius: 5px;
+            transition: height 1s ease;
+        }
+        
+        .tree-branch {
+            position: absolute;
+            background: linear-gradient(to right, #4a3728, #6d4c41);
+            height: 8px;
+            border-radius: 4px;
+            transition: all 0.5s ease;
+        }
+        
+        .tree-leaves {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 50%;
+            transition: all 1s ease;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+        
+        .leaf-layer-1 { background: linear-gradient(135deg, #1b5e20, #2e7d32); z-index: 3; }
+        .leaf-layer-2 { background: linear-gradient(135deg, #2e7d32, #43a047); z-index: 2; }
+        .leaf-layer-3 { background: linear-gradient(135deg, #43a047, #66bb6a); z-index: 1; }
+        
+        .tree-fruits {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: radial-gradient(circle at 30% 30%, #ff6b6b, #c0392b);
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        
+        .tree-flowers {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: radial-gradient(circle at 30% 30%, #fff, #ffeb3b);
+            border-radius: 50%;
+        }
+        
+        @keyframes sway {
+            0%, 100% { transform: translateX(-50%) rotate(-2deg); }
+            50% { transform: translateX(-50%) rotate(2deg); }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        @keyframes fallingLeaf {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100px) rotate(360deg); opacity: 0; }
+        }
+        
+        .falling-leaf {
+            animation: fallingLeaf 3s ease-in-out forwards;
+        }
+        
+        /* Phone Block Animation */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0) rotate(0deg); }
+            25% { transform: translateX(-10px) rotate(-5deg); }
+            75% { transform: translateX(10px) rotate(5deg); }
+        }
+        
+        @keyframes pulse-red {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            50% { box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); }
+        }
+        
+        .phone-blocked { animation: shake 0.5s ease-in-out infinite; }
+        .pulse-warning { animation: pulse-red 1.5s ease-in-out infinite; }
+        
+        /* Progress Ring */
+        .progress-ring { transform: rotate(-90deg); }
+        
+        /* Tab Active State */
+        .tab-active {
+            background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-secondary); }
+        ::-webkit-scrollbar-thumb { background: var(--accent-1); border-radius: 4px; }
+        
+        /* Focus Mode Overlay */
+        .focus-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 9999;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .focus-overlay.active { display: flex; }
+        
+        /* Card Hover Effects */
+        .hover-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .hover-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
+        }
+        
+        /* Calendar Styles */
+        .calendar-day {
+            transition: all 0.2s ease;
+        }
+        .calendar-day:hover {
+            background: var(--accent-1);
+            transform: scale(1.1);
+        }
+        .calendar-day.has-activity {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+        .calendar-day.today {
+            border: 2px solid var(--accent-1);
+        }
+        
+        /* Forest Grid */
+        .forest-tree {
+            transition: transform 0.3s ease;
+        }
+        .forest-tree:hover {
+            transform: scale(1.1);
+        }
+        
+        /* Secret Animation */
+        @keyframes rainbow {
+            0% { filter: hue-rotate(0deg); }
+            100% { filter: hue-rotate(360deg); }
+        }
+        .rainbow { animation: rainbow 3s linear infinite; }
+        
+        /* Notification Badge */
+        .badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ef4444;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+        
+        /* Range Slider */
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: #374151;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+            cursor: pointer;
+        }
+        
+        /* Achievement Badge */
+        .achievement {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            padding: 10px 20px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+        
+        /* Motivational Messages */
+        .motivation-text {
+            animation: float 3s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Focus Mode Overlay -->
+    <div id="focus-overlay" class="focus-overlay">
+        <div class="text-center p-8">
+            <div class="text-8xl mb-6 phone-blocked">📵</div>
+            <h1 class="text-4xl font-bold text-red-500 mb-4 pulse-warning inline-block px-6 py-2 rounded-xl">FOCUS MODE ACTIVE</h1>
+            <p class="text-2xl text-gray-300 mb-2 motivation-text" id="motivation-text">Stay focused! Your tree is growing! 🌳</p>
+            <div class="mt-8">
+                <div class="text-7xl font-bold text-white mb-4" id="overlay-timer">45:00</div>
+                <p class="text-gray-400">Time remaining in your study session</p>
+            </div>
+            <div class="mt-8 flex justify-center">
+                <div class="tree-container" id="overlay-tree" style="transform: scale(0.8);">
+                    <div class="tree-ground"></div>
+                    <div class="tree-trunk" id="overlay-trunk" style="height: 30px;"></div>
+                    <div class="tree-leaves leaf-layer-1" id="overlay-leaf1" style="width: 0; height: 0; bottom: 30%;"></div>
+                    <div class="tree-leaves leaf-layer-2" id="overlay-leaf2" style="width: 0; height: 0; bottom: 45%;"></div>
+                    <div class="tree-leaves leaf-layer-3" id="overlay-leaf3" style="width: 0; height: 0; bottom: 60%;"></div>
+                </div>
+            </div>
+            <button onclick="emergencyUnlock()" class="mt-8 px-6 py-3 bg-gray-800 text-gray-400 rounded-xl hover:bg-gray-700 transition text-sm">
+                🚨 Emergency Exit (Tree will wither!)
+            </button>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 glass border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-2">
+                    <span class="text-2xl">🌳</span>
+                    <span class="font-bold text-lg bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">FocusForest</span>
+                </div>
+                
+                <div class="flex items-center gap-1 overflow-x-auto pb-1" id="nav-tabs">
+                    <button onclick="showTab('dashboard')" id="tab-dashboard" class="tab-btn tab-active px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap">
+                        🏠 Home
+                    </button>
+                    <button onclick="showTab('timer')" id="tab-timer" class="tab-btn px-3 py-1.5 rounded-full text-xs font-medium bg-gray-800 hover:bg-gray-700 transition-all whitespace-nowrap relative">
+                        ⏱️ Timer
+                    </button>
+                    <button onclick="showTab('youtube')" id="tab-youtube" class="tab-btn px-3 py-1.5 rounded-full text-xs font-medium bg-gray-800 hover:bg-gray-700 transition-all whitespace-nowrap">
+                        📺 YouTube
+                    </button>
+                    <button onclick="showTab('doubts')" id="tab-doubts" class="tab-btn px-3 py-1.5 rounded-full text-xs font-medium bg-gray-800 hover:bg-gray-700 transition-all whitespace-nowrap relative">
+                        ❓ Doubts
+                        <span id="doubts-badge" class="badge hidden">0</span>
+                    </button>
+                    <button onclick="showTab('browser')" id="tab-browser" class="tab-btn px-3 py-1.5 rounded-full text-xs font-medium bg-gray-800 hover:bg-gray-700 transition-all whitespace-nowrap">
+                        🌐 Browser
+                    </button>
+                    <button onclick="showTab('forest')" id="tab-forest" class="tab-btn px-3 py-1.5 rounded-full text-xs font-medium bg-gray-800 hover:bg-gray-700 transition-all whitespace-nowrap">
+                        🌲 Forest
+                    </button>
+                    <button onclick="showTab('calendar')" id="tab-calendar" class="tab-btn px-3 py-1.5 rounded-full text-xs font-medium bg-gray-800 hover:bg-gray-700 transition-all whitespace-nowrap">
+                        📅 Calendar
+                    </button>
+                    <button onclick="showTab('stats')" id="tab-stats" class="tab-btn px-3 py-1.5 rounded-full text-xs font-medium bg-gray-800 hover:bg-gray-700 transition-all whitespace-nowrap">
+                        📊 Stats
+                    </button>
+                    <button onclick="showTab('settings')" id="tab-settings" class="tab-btn px-3 py-1.5 rounded-full text-xs font-medium bg-gray-800 hover:bg-gray-700 transition-all whitespace-nowrap">
+                        ⚙️
+                    </button>
+                </div>
+                
+                <div class="flex items-center gap-2">
+                    <button onclick="toggleTheme()" class="p-2 rounded-full bg-gray-800 hover:bg-gray-700 transition" id="theme-toggle">
+                        🌙
+                    </button>
+                    <button onclick="toggleFullscreen()" class="p-2 rounded-full bg-gray-800 hover:bg-gray-700 transition">
+                        ⛶
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-20 pb-10 px-4">
+        <!-- DASHBOARD TAB -->
+        <section id="dashboard-tab" class="tab-content max-w-7xl mx-auto">
+            <div class="text-center mb-8">
+                <h1 class="text-4xl font-bold mb-2">Welcome back! 👋</h1>
+                <p class="text-gray-400" id="current-date"></p>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <div class="glass rounded-2xl p-4 hover-card">
+                    <div class="text-3xl font-bold text-purple-400" id="dash-focus">0</div>
+                    <div class="text-gray-400 text-sm">Focus Minutes Today</div>
+                </div>
+                <div class="glass rounded-2xl p-4 hover-card">
+                    <div class="text-3xl font-bold text-red-400" id="dash-youtube">0</div>
+                    <div class="text-gray-400 text-sm">YouTube Minutes</div>
+                </div>
+                <div class="glass rounded-2xl p-4 hover-card">
+                    <div class="text-3xl font-bold text-green-400" id="dash-trees">0</div>
+                    <div class="text-gray-400 text-sm">Trees Grown</div>
+                </div>
+                <div class="glass rounded-2xl p-4 hover-card">
+                    <div class="text-3xl font-bold text-yellow-400" id="dash-streak">0</div>
+                    <div class="text-gray-400 text-sm">Day Streak 🔥</div>
+                </div>
+            </div>
+            
+            <div class="grid lg:grid-cols-3 gap-6">
+                <!-- Quick Timer Start -->
+                <div class="glass rounded-3xl p-6 hover-card">
+                    <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+                        <span class="text-2xl">⏱️</span> Quick Start
+                    </h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="quickStart(25)" class="p-4 bg-gradient-to-r from-purple-600 to-purple-800 rounded-xl hover:scale-105 transition-transform">
+                            <div class="text-2xl">🍅</div>
+                            <div class="font-semibold">25 min</div>
+                        </button>
+                        <button onclick="quickStart(45)" class="p-4 bg-gradient-to-r from-green-600 to-green-800 rounded-xl hover:scale-105 transition-transform">
+                            <div class="text-2xl">🌳</div>
+                            <div class="font-semibold">45 min</div>
+                        </button>
+                        <button onclick="quickStart(60)" class="p-4 bg-gradient-to-r from-blue-600 to-blue-800 rounded-xl hover:scale-105 transition-transform">
+                            <div class="text-2xl">🚀</div>
+                            <div class="font-semibold">60 min</div>
+                        </button>
+                        <button onclick="quickStart(90)" class="p-4 bg-gradient-to-r from-red-600 to-red-800 rounded-xl hover:scale-105 transition-transform">
+                            <div class="text-2xl">💪</div>
+                            <div class="font-semibold">90 min</div>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Current Tree -->
+                <div class="glass rounded-3xl p-6 hover-card">
+                    <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+                        <span class="text-2xl">🌱</span> Current Tree
+                    </h3>
+                    <div class="flex justify-center">
+                        <div class="tree-container" id="dash-tree" style="transform: scale(0.6);">
+                            <div class="tree-ground"></div>
+                            <div class="tree-trunk" id="dash-trunk" style="height: 30px;"></div>
+                            <div class="tree-leaves leaf-layer-1" id="dash-leaf1" style="width: 0; height: 0; bottom: 30%;"></div>
+                            <div class="tree-leaves leaf-layer-2" id="dash-leaf2" style="width: 0; height: 0; bottom: 45%;"></div>
+                            <div class="tree-leaves leaf-layer-3" id="dash-leaf3" style="width: 0; height: 0; bottom: 60%;"></div>
+                        </div>
+                    </div>
+                    <div class="text-center mt-2">
+                        <span id="dash-tree-stage" class="text-green-400 font-semibold">🌱 Seed</span>
+                    </div>
+                </div>
+                
+                <!-- Recent Activity -->
+                <div class="glass rounded-3xl p-6 hover-card">
+                    <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+                        <span class="text-2xl">📋</span> Recent Activity
+                    </h3>
+                    <div id="recent-activity" class="space-y-2 max-h-48 overflow-y-auto">
+                        <p class="text-gray-500 text-center text-sm">No activity yet today</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pending Doubts Preview -->
+            <div class="mt-6 glass rounded-3xl p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold flex items-center gap-2">
+                        <span class="text-2xl">❓</span> Pending Doubts
+                    </h3>
+                    <button onclick="showTab('doubts')" class="text-purple-400 hover:text-purple-300 text-sm">View All →</button>
+                </div>
+                <div id="dash-doubts" class="grid md:grid-cols-3 gap-4">
+                    <p class="text-gray-500 text-center text-sm col-span-3">No pending doubts</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- TIMER TAB -->
+        <section id="timer-tab" class="tab-content max-w-6xl mx-auto hidden">
+            <div class="grid lg:grid-cols-2 gap-8">
+                <!-- Timer Section -->
+                <div class="glass rounded-3xl p-8">
+                    <h2 class="text-2xl font-bold text-center mb-6 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                        🍅 Pomodoro Timer
+                    </h2>
+                    
+                    <!-- Timer Display -->
+                    <div class="relative w-72 h-72 mx-auto mb-6">
+                        <svg class="w-full h-full progress-ring">
+                            <circle cx="144" cy="144" r="136" stroke="#374151" stroke-width="12" fill="none"/>
+                            <circle id="progress-circle" cx="144" cy="144" r="136" stroke="url(#timer-gradient)" stroke-width="12" fill="none"
+                                stroke-dasharray="854" stroke-dashoffset="0" stroke-linecap="round"/>
+                            <defs>
+                                <linearGradient id="timer-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" style="stop-color:#667eea"/>
+                                    <stop offset="100%" style="stop-color:#764ba2"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <div class="absolute inset-0 flex flex-col items-center justify-center">
+                            <span id="timer-display" class="text-6xl font-bold">45:00</span>
+                            <span id="timer-label" class="text-gray-400 mt-2">Study Session</span>
+                            <span id="session-count" class="text-sm text-purple-400 mt-1">Session 1/4</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Timer Controls -->
+                    <div class="flex justify-center gap-4 mb-6">
+                        <button onclick="startTimer()" id="start-btn" class="px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl font-bold text-lg hover:scale-105 transition-transform shadow-lg">
+                            ▶️ Start Focus
+                        </button>
+                        <button onclick="pauseTimer()" id="pause-btn" class="px-8 py-4 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-2xl font-bold text-lg hover:scale-105 transition-transform shadow-lg hidden">
+                            ⏸️ Pause
+                        </button>
+                        <button onclick="resetTimer()" class="px-6 py-4 bg-gradient-to-r from-red-500 to-pink-500 rounded-2xl font-bold hover:scale-105 transition-transform shadow-lg">
+                            🔄
+                        </button>
+                    </div>
+                    
+                    <!-- Session Types -->
+                    <div class="flex justify-center gap-2 flex-wrap mb-6">
+                        <button onclick="setSession('study')" id="study-btn" class="px-4 py-2 bg-purple-600 rounded-xl text-sm font-medium">📚 Study</button>
+                        <button onclick="setSession('short')" id="short-btn" class="px-4 py-2 bg-gray-700 rounded-xl text-sm font-medium">☕ Short Break</button>
+                        <button onclick="setSession('long')" id="long-btn" class="px-4 py-2 bg-gray-700 rounded-xl text-sm font-medium">🧘 Long Break</button>
+                    </div>
+                    
+                    <!-- Focus Mode Toggle -->
+                    <div class="flex items-center justify-center gap-4 p-4 bg-gray-800/50 rounded-xl">
+                        <span class="text-gray-400">Focus Mode:</span>
+                        <select id="focus-mode-select" class="bg-gray-700 rounded-lg px-3 py-2 text-sm">
+                            <option value="gentle">🌿 Gentle (Reminder)</option>
+                            <option value="moderate">⚡ Moderate (Warning)</option>
+                            <option value="strict" selected>🔒 Strict (Full Block)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Tree Section -->
+                <div class="glass rounded-3xl p-8">
+                    <h2 class="text-2xl font-bold text-center mb-6 bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                        🌳 Your Focus Tree
+                    </h2>
+                    
+                    <div class="flex justify-center mb-6">
+                        <div class="tree-container" id="main-tree">
+                            <div class="tree-ground"></div>
+                            <div class="tree-trunk" id="trunk" style="height: 30px;"></div>
+                            <div class="tree-leaves leaf-layer-1" id="leaf1" style="width: 0; height: 0; bottom: 30%;"></div>
+                            <div class="tree-leaves leaf-layer-2" id="leaf2" style="width: 0; height: 0; bottom: 45%;"></div>
+                            <div class="tree-leaves leaf-layer-3" id="leaf3" style="width: 0; height: 0; bottom: 60%;"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Growth Progress -->
+                    <div class="mb-6">
+                        <div class="flex justify-between text-sm mb-2">
+                            <span class="text-gray-400">Growth Progress</span>
+                            <span id="growth-percent" class="text-green-400">0%</span>
+                        </div>
+                        <div class="w-full bg-gray-700 rounded-full h-4">
+                            <div id="tree-progress" class="bg-gradient-to-r from-green-500 to-emerald-400 h-4 rounded-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                        <div class="flex justify-between text-xs mt-2 text-gray-500">
+                            <span>🌱</span>
+                            <span>🌿</span>
+                            <span>🌲</span>
+                            <span>🌳</span>
+                            <span>🌳✨</span>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mb-6">
+                        <p id="tree-stage" class="text-xl font-bold text-green-400">🌱 Seed Stage</p>
+                        <p class="text-gray-400 text-sm mt-1">Keep focusing to grow your tree!</p>
+                    </div>
+                    
+                    <!-- Stats Grid -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-gray-800/50 p-4 rounded-xl text-center">
+                            <p class="text-3xl font-bold text-purple-400" id="total-focus">0</p>
+                            <p class="text-gray-400 text-sm">Total Minutes</p>
+                        </div>
+                        <div class="bg-gray-800/50 p-4 rounded-xl text-center">
+                            <p class="text-3xl font-bold text-green-400" id="trees-grown">0</p>
+                            <p class="text-gray-400 text-sm">Trees Grown</p>
+                        </div>
+                        <div class="bg-gray-800/50 p-4 rounded-xl text-center">
+                            <p class="text-3xl font-bold text-yellow-400" id="today-sessions">0</p>
+                            <p class="text-gray-400 text-sm">Today's Sessions</p>
+                        </div>
+                        <div class="bg-gray-800/50 p-4 rounded-xl text-center">
+                            <p class="text-3xl font-bold text-red-400" id="focus-streak">0</p>
+                            <p class="text-gray-400 text-sm">Day Streak 🔥</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- YOUTUBE TAB -->
+        <section id="youtube-tab" class="tab-content max-w-7xl mx-auto hidden">
+            <div class="grid lg:grid-cols-3 gap-6">
+                <!-- YouTube Player -->
+                <div class="lg:col-span-2 glass rounded-3xl p-6">
+                    <h2 class="text-2xl font-bold mb-4 bg-gradient-to-r from-red-400 to-pink-400 bg-clip-text text-transparent">
+                        📺 YouTube Learning Center
+                    </h2>
+                    
+                    <div class="flex gap-2 mb-4">
+                        <input type="text" id="youtube-url" placeholder="Paste YouTube URL or search..." 
+                            class="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl focus:border-red-500 focus:outline-none"
+                            onkeypress="if(event.key==='Enter')loadYouTube()">
+                        <button onclick="loadYouTube()" class="px-6 py-3 bg-gradient-to-r from-red-500 to-pink-500 rounded-xl font-semibold hover:scale-105 transition-transform">
+                            ▶️ Load
+                        </button>
+                    </div>
+                    
+                    <!-- Category Tags -->
+                    <div class="flex gap-2 mb-4 flex-wrap">
+                        <input type="text" id="video-category" placeholder="Category (e.g., Math, Physics)" 
+                            class="px-3 py-1 bg-gray-800 border border-gray-700 rounded-lg text-sm focus:border-red-500 focus:outline-none">
+                        <button onclick="addCategory()" class="px-3 py-1 bg-gray-700 rounded-lg text-sm hover:bg-gray-600">+ Add Tag</button>
+                        <div id="category-tags" class="flex gap-2 flex-wrap"></div>
+                    </div>
+                    
+                    <div id="youtube-player" class="aspect-video bg-gray-900 rounded-xl overflow-hidden flex items-center justify-center">
+                        <div class="text-center">
+                            <div class="text-6xl mb-4">📚</div>
+                            <p class="text-gray-400">Paste a YouTube URL to start learning</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Watch Time Tracker -->
+                    <div class="mt-4 grid grid-cols-2 gap-4">
+                        <div class="flex items-center gap-4 bg-gray-800/50 p-4 rounded-xl">
+                            <span class="text-3xl">⏱️</span>
+                            <div>
+                                <p class="text-gray-400 text-sm">Session Time</p>
+                                <p id="yt-session-time" class="text-2xl font-bold text-red-400">00:00:00</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-end gap-2">
+                            <button onclick="startYTTracking()" id="yt-start" class="px-6 py-3 bg-green-600 rounded-xl font-semibold hover:bg-green-700">▶️ Track</button>
+                            <button onclick="pauseYTTracking()" id="yt-pause" class="px-6 py-3 bg-yellow-600 rounded-xl font-semibold hover:bg-yellow-700 hidden">⏸️ Pause</button>
+                            <button onclick="stopYTTracking()" id="yt-stop" class="px-6 py-3 bg-red-600 rounded-xl font-semibold hover:bg-red-700 hidden">⏹️ Stop</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Add Doubt -->
+                    <div class="mt-4 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
+                        <div class="flex gap-2">
+                            <input type="text" id="quick-doubt" placeholder="Quick add a doubt while watching..." 
+                                class="flex-1 px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:border-yellow-500 focus:outline-none">
+                            <button onclick="quickAddDoubt()" class="px-4 py-2 bg-yellow-600 rounded-lg font-semibold hover:bg-yellow-700">❓ Add</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- YouTube Stats & Tree -->
+                <div class="space-y-6">
+                    <div class="glass rounded-3xl p-6">
+                        <h3 class="text-lg font-bold mb-4 text-green-400 flex items-center gap-2">
+                            🌳 Knowledge Tree
+                        </h3>
+                        <div class="flex justify-center mb-4">
+                            <div class="tree-container" id="yt-tree" style="transform: scale(0.6);">
+                                <div class="tree-ground"></div>
+                                <div class="tree-trunk" id="yt-trunk" style="height: 30px;"></div>
+                                <div class="tree-leaves leaf-layer-1" id="yt-leaf1" style="width: 0; height: 0; bottom: 30%;"></div>
+                                <div class="tree-leaves leaf-layer-2" id="yt-leaf2" style="width: 0; height: 0; bottom: 45%;"></div>
+                                <div class="tree-leaves leaf-layer-3" id="yt-leaf3" style="width: 0; height: 0; bottom: 60%;"></div>
+                            </div>
+                        </div>
+                        <div class="w-full bg-gray-700 rounded-full h-3 mb-2">
+                            <div id="yt-tree-progress" class="bg-gradient-to-r from-green-500 to-emerald-400 h-3 rounded-full transition-all" style="width: 0%"></div>
+                        </div>
+                        <p class="text-center text-sm text-gray-400">Tree grows as you watch lectures!</p>
+                    </div>
+                    
+                    <div class="glass rounded-3xl p-6">
+                        <h3 class="text-lg font-bold mb-4 text-red-400 flex items-center gap-2">
+                            📊 Watch Stats
+                        </h3>
+                        <div class="space-y-3">
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Today</span>
+                                <span id="yt-today" class="font-bold text-red-400">0 min</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">This Week</span>
+                                <span id="yt-week" class="font-bold text-red-400">0 min</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Total</span>
+                                <span id="yt-total" class="font-bold text-red-400">0 min</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="glass rounded-3xl p-6">
+                        <h3 class="text-lg font-bold mb-4 text-purple-400 flex items-center gap-2">
+                            📜 Watch History
+                        </h3>
+                        <div id="yt-history" class="space-y-2 max-h-64 overflow-y-auto">
+                            <p class="text-gray-500 text-sm text-center">No videos watched yet</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- DOUBTS TAB -->
+        <section id="doubts-tab" class="tab-content max-w-6xl mx-auto hidden">
+            <!-- Add Doubt Form -->
+            <div class="glass rounded-3xl p-6 mb-6">
+                <h2 class="text-2xl font-bold mb-4 bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">
+                    ❓ Add New Doubt
+                </h2>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <input type="text" id="doubt-title" placeholder="Doubt Title *" 
+                            class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl focus:border-yellow-500 focus:outline-none">
+                        
+                        <textarea id="doubt-desc" placeholder="Describe your doubt in detail..." rows="4"
+                            class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl focus:border-yellow-500 focus:outline-none resize-none"></textarea>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <select id="doubt-subject" class="px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl focus:border-yellow-500 focus:outline-none">
+                                <option value="">Select Subject</option>
+                                <option value="math">📐 Mathematics</option>
+                                <option value="physics">⚛️ Physics</option>
+                                <option value="chemistry">🧪 Chemistry</option>
+                                <option value="biology">🧬 Biology</option>
+                                <option value="cs">💻 Computer Science</option>
+                                <option value="other">📚 Other</option>
+                            </select>
+                            <select id="doubt-priority" class="px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl focus:border-yellow-500 focus:outline-none">
+                                <option value="low">🟢 Low Priority</option>
+                                <option value="medium">🟡 Medium Priority</option>
+                                <option value="high">🔴 High Priority</option>
+                            </select>
+                        </div>
+                        
+                        <input type="text" id="doubt-video" placeholder="Related Video/Topic URL (optional)" 
+                            class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl focus:border-yellow-500 focus:outline-none">
+                    </div>
+                    
+                    <div>
+                        <div id="image-drop-zone" class="border-2 border-dashed border-gray-700 rounded-xl p-6 text-center h-full flex flex-col items-center justify-center hover:border-yellow-500 transition cursor-pointer"
+                            onclick="document.getElementById('doubt-images').click()">
+                            <input type="file" id="doubt-images" accept="image/*" multiple class="hidden" onchange="handleImageUpload(event)">
+                            <div id="image-previews" class="flex flex-wrap gap-2 mb-4 justify-center"></div>
+                            <div id="upload-placeholder">
+                                <div class="text-4xl mb-2">📷</div>
+                                <p class="text-gray-400">Click or drag images here</p>
+                                <p class="text-gray-500 text-sm mt-1">Multiple images supported</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-6 flex gap-4">
+                    <button onclick="addDoubt()" class="px-8 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl font-bold hover:scale-105 transition-transform shadow-lg">
+                        ➕ Save Doubt
+                    </button>
+                    <button onclick="clearDoubtForm()" class="px-6 py-3 bg-gray-700 rounded-xl font-semibold hover:bg-gray-600">
+                        🗑️ Clear
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Doubts Filters -->
+            <div class="flex flex-wrap gap-4 mb-6">
+                <div class="flex items-center gap-2">
+                    <span class="text-gray-400">Filter:</span>
+                    <select id="doubt-filter-status" onchange="filterDoubts()" class="px-3 py-2 bg-gray-800 rounded-lg">
+                        <option value="all">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="solved">Solved</option>
+                    </select>
+                    <select id="doubt-filter-subject" onchange="filterDoubts()" class="px-3 py-2 bg-gray-800 rounded-lg">
+                        <option value="all">All Subjects</option>
+                        <option value="math">Mathematics</option>
+                        <option value="physics">Physics</option>
+                        <option value="chemistry">Chemistry</option>
+                        <option value="biology">Biology</option>
+                        <option value="cs">Computer Science</option>
+                        <option value="other">Other</option>
+                    </select>
+                    <select id="doubt-filter-priority" onchange="filterDoubts()" class="px-3 py-2 bg-gray-800 rounded-lg">
+                        <option value="all">All Priority</option>
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                    </select>
+                </div>
+                <input type="text" id="doubt-search" placeholder="🔍 Search doubts..." onkeyup="filterDoubts()"
+                    class="px-4 py-2 bg-gray-800 rounded-lg border border-gray-700 focus:border-yellow-500 focus:outline-none">
+            </div>
+            
+            <!-- Doubts Stats -->
+            <div class="grid grid-cols-4 gap-4 mb-6">
+                <div class="glass rounded-xl p-4 text-center">
+                    <div class="text-2xl font-bold text-yellow-400" id="total-doubts">0</div>
+                    <div class="text-gray-400 text-sm">Total</div>
+                </div>
+                <div class="glass rounded-xl p-4 text-center">
+                    <div class="text-2xl font-bold text-orange-400" id="pending-doubts">0</div>
+                    <div class="text-gray-400 text-sm">Pending</div>
+                </div>
+                <div class="glass rounded-xl p-4 text-center">
+                    <div class="text-2xl font-bold text-green-400" id="solved-doubts">0</div>
+                    <div class="text-gray-400 text-sm">Solved</div>
+                </div>
+                <div class="glass rounded-xl p-4 text-center">
+                    <div class="text-2xl font-bold text-red-400" id="high-priority-doubts">0</div>
+                    <div class="text-gray-400 text-sm">High Priority</div>
+                </div>
+            </div>
+            
+            <!-- Doubts List -->
+            <h3 class="text-xl font-bold mb-4 text-yellow-400">📋 Your Doubts</h3>
+            <div id="doubts-list" class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <p class="text-gray-500 col-span-full text-center py-10">No doubts yet! Add your first doubt above.</p>
+            </div>
+        </section>
+
+        <!-- BROWSER TAB -->
+        <section id="browser-tab" class="tab-content max-w-7xl mx-auto hidden">
+            <div class="glass rounded-3xl p-4">
+                <!-- Browser Controls -->
+                <div class="flex gap-2 mb-4 items-center">
+                    <button onclick="browserBack()" class="p-2 bg-gray-700 rounded-lg hover:bg-gray-600 transition">⬅️</button>
+                    <button onclick="browserForward()" class="p-2 bg-gray-700 rounded-lg hover:bg-gray-600 transition">➡️</button>
+                    <button onclick="browserRefresh()" class="p-2 bg-gray-700 rounded-lg hover:bg-gray-600 transition">🔄</button>
+                    <button onclick="browserHome()" class="p-2 bg-gray-700 rounded-lg hover:bg-gray-600 transition">🏠</button>
+                    <input type="text" id="browser-url" placeholder="Enter URL or search..." 
+                        class="flex-1 px-4 py-2 bg-gray-800 border border-gray-700 rounded-xl focus:border-blue-500 focus:outline-none"
+                        onkeypress="if(event.key==='Enter')loadURL()">
+                    <button onclick="loadURL()" class="px-6 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl font-semibold hover:scale-105 transition-transform">
+                        🚀 Go
+                    </button>
+                    <button onclick="addBookmark()" class="p-2 bg-gray-700 rounded-lg hover:bg-gray-600 transition" title="Bookmark">⭐</button>
+                </div>
+                
+                <!-- Quick Links -->
+                <div class="flex gap-2 mb-4 flex-wrap">
+                    <span class="text-gray-400 text-sm">Quick:</span>
+                    <button onclick="quickLoad('https://www.google.com')" class="px-3 py-1 bg-gray-700 rounded-lg text-sm hover:bg-gray-600">🔍 Google</button>
+                    <button onclick="quickLoad('https://www.wikipedia.org')" class="px-3 py-1 bg-gray-700 rounded-lg text-sm hover:bg-gray-600">📖 Wikipedia</button>
+                    <button onclick="quickLoad('https://chat.openai.com')" class="px-3 py-1 bg-gray-700 rounded-lg text-sm hover:bg-gray-600">🤖 ChatGPT</button>
+                    <button onclick="quickLoad('https://www.wolframalpha.com')" class="px-3 py-1 bg-gray-700 rounded-lg text-sm hover:bg-gray-600">🧮 Wolfram</button>
+                    <button onclick="quickLoad('https://stackoverflow.com')" class="px-3 py-1 bg-gray-700 rounded-lg text-sm hover:bg-gray-600">💻 Stack Overflow</button>
+                    <button onclick="quickLoad('https://www.khanacademy.org')" class="px-3 py-1 bg-gray-700 rounded-lg text-sm hover:bg-gray-600">🎓 Khan Academy</button>
+                    <button onclick="quickLoad('https://www.desmos.com/calculator')" class="px-3 py-1 bg-gray-700 rounded-lg text-sm hover:bg-gray-600">📊 Desmos</button>
+                    <button onclick="toggleBookmarks()" class="px-3 py-1 bg-yellow-700 rounded-lg text-sm hover:bg-yellow-600">⭐ Bookmarks</button>
+                </div>
+                
+                <!-- Bookmarks Panel -->
+                <div id="bookmarks-panel" class="hidden mb-4 p-4 bg-gray-800/50 rounded-xl">
+                    <h4 class="font-bold mb-2 text-yellow-400">⭐ Your Bookmarks</h4>
+                    <div id="bookmarks-list" class="flex flex-wrap gap-2">
+                        <p class="text-gray-500 text-sm">No bookmarks yet</p>
+                    </div>
+                </div>
+                
+                <!-- Browser Frame -->
+                <div class="bg-gray-900 rounded-xl overflow-hidden" style="height: 70vh;">
+                    <iframe id="browser-frame" src="https://www.google.com/webhp?igu=1" 
+                        class="w-full h-full border-none"
+                        sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture">
+                    </iframe>
+                </div>
+                
+                <!-- Browser History -->
+                <div class="mt-4 flex items-center justify-between">
+                    <div class="flex gap-2">
+                        <button onclick="toggleBrowserHistory()" class="px-4 py-2 bg-gray-700 rounded-lg text-sm hover:bg-gray-600">📜 History</button>
+                    </div>
+                    <div class="text-sm text-gray-400">
+                        Browse time today: <span id="browse-time" class="text-blue-400 font-bold">0 min</span>
+                    </div>
+                </div>
+                
+                <div id="browser-history-panel" class="hidden mt-4 p-4 bg-gray-800/50 rounded-xl max-h-48 overflow-y-auto">
+                    <h4 class="font-bold mb-2 text-blue-400">📜 Browser History</h4>
+                    <div id="browser-history-list" class="space-y-2">
+                        <p class="text-gray-500 text-sm">No history yet</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FOREST TAB -->
+        <section id="forest-tab" class="tab-content max-w-7xl mx-auto hidden">
+            <div class="text-center mb-8">
+                <h1 class="text-4xl font-bold mb-2 bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">🌲 Your Focus Forest 🌲</h1>
+                <p class="text-gray-400">Every tree represents your focused study sessions</p>
+            </div>
+            
+            <!-- Forest Stats -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <div class="glass rounded-2xl p-4 text-center hover-card">
+                    <div class="text-4xl font-bold text-green-400" id="forest-trees">0</div>
+                    <div class="text-gray-400">Trees in Forest</div>
+                </div>
+                <div class="glass rounded-2xl p-4 text-center hover-card">
+                    <div class="text-4xl font-bold text-purple-400" id="forest-hours">0</div>
+                    <div class="text-gray-400">Hours Focused</div>
+                </div>
+                <div class="glass rounded-2xl p-4 text-center hover-card">
+                    <div class="text-4xl font-bold text-yellow-400" id="forest-streak">0</div>
+                    <div class="text-gray-400">Best Streak</div>
+                </div>
+                <div class="glass rounded-2xl p-4 text-center hover-card">
+                    <div class="text-4xl font-bold text-red-400" id="forest-yt-trees">0</div>
+                    <div class="text-gray-400">Knowledge Trees</div>
+                </div>
+            </div>
+            
+            <!-- Achievements -->
+            <div class="glass rounded-3xl p-6 mb-8">
+                <h3 class="text-xl font-bold mb-4 text-yellow-400">🏆 Achievements</h3>
+                <div id="achievements" class="flex flex-wrap gap-3">
+                    <div class="achievement opacity-50">🌱 First Seed</div>
+                    <div class="achievement opacity-50">🌳 10 Trees</div>
+                    <div class="achievement opacity-50">🌲 50 Trees</div>
+                    <div class="achievement opacity-50">🏆 100 Trees</div>
+                    <div class="achievement opacity-50">⭐ 1 Hour Focus</div>
+                    <div class="achievement opacity-50">🔥 7 Day Streak</div>
+                    <div class="achievement opacity-50">💎 30 Day Streak</div>
+                    <div class="achievement opacity-50">📚 10 Hour YouTube</div>
+                </div>
+            </div>
+            
+            <!-- Forest Grid -->
+            <div class="glass rounded-3xl p-6">
+                <h3 class="text-xl font-bold mb-4 text-green-400">🌳 Your Trees</h3>
+                <div id="forest-grid" class="grid grid-cols-5 md:grid-cols-8 lg:grid-cols-12 gap-4">
+                    <p class="text-gray-500 col-span-full text-center py-10">No trees grown yet. Start focusing to grow your forest! 🌱</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- CALENDAR TAB -->
+        <section id="calendar-tab" class="tab-content max-w-6xl mx-auto hidden">
+            <div class="grid lg:grid-cols-3 gap-6">
+                <!-- Calendar -->
+                <div class="lg:col-span-2 glass rounded-3xl p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <button onclick="prevMonth()" class="p-2 bg-gray-700 rounded-lg hover:bg-gray-600">◀️</button>
+                        <h2 id="calendar-title" class="text-2xl font-bold"></h2>
+                        <button onclick="nextMonth()" class="p-2 bg-gray-700 rounded-lg hover:bg-gray-600">▶️</button>
+                    </div>
+                    
+                    <div class="grid grid-cols-7 gap-2 mb-4">
+                        <div class="text-center text-gray-400 text-sm font-medium">Sun</div>
+                        <div class="text-center text-gray-400 text-sm font-medium">Mon</div>
+                        <div class="text-center text-gray-400 text-sm font-medium">Tue</div>
+                        <div class="text-center text-gray-400 text-sm font-medium">Wed</div>
+                        <div class="text-center text-gray-400 text-sm font-medium">Thu</div>
+                        <div class="text-center text-gray-400 text-sm font-medium">Fri</div>
+                        <div class="text-center text-gray-400 text-sm font-medium">Sat</div>
+                    </div>
+                    
+                    <div id="calendar-grid" class="grid grid-cols-7 gap-2">
+                        <!-- Calendar days will be generated here -->
+                    </div>
+                </div>
+                
+                <!-- Day Details -->
+                <div class="glass rounded-3xl p-6">
+                    <h3 id="selected-date-title" class="text-xl font-bold mb-4 text-purple-400">Select a Date</h3>
+                    
+                    <div id="day-details" class="space-y-4">
+                        <p class="text-gray-500 text-center">Click on a date to see details</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- STATS TAB -->
+        <section id="stats-tab" class="tab-content max-w-6xl mx-auto hidden">
+            <h2 class="text-3xl font-bold text-center mb-8 bg-gradient-to-r from-purple-400 via-pink-400 to-red-400 bg-clip-text text-transparent">
+                📊 Productivity Analytics
+            </h2>
+            
+            <!-- Overview Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <div class="glass rounded-2xl p-6 text-center hover-card bg-gradient-to-br from-purple-900/50 to-purple-800/50">
+                    <div class="text-4xl font-bold text-purple-400" id="stat-total-focus">0</div>
+                    <div class="text-gray-400">Total Focus (min)</div>
+                </div>
+                <div class="glass rounded-2xl p-6 text-center hover-card bg-gradient-to-br from-red-900/50 to-red-800/50">
+                    <div class="text-4xl font-bold text-red-400" id="stat-total-youtube">0</div>
+                    <div class="text-gray-400">YouTube (min)</div>
+                </div>
+                <div class="glass rounded-2xl p-6 text-center hover-card bg-gradient-to-br from-green-900/50 to-green-800/50">
+                    <div class="text-4xl font-bold text-green-400" id="stat-total-trees">0</div>
+                    <div class="text-gray-400">Trees Grown</div>
+                </div>
+                <div class="glass rounded-2xl p-6 text-center hover-card bg-gradient-to-br from-yellow-900/50 to-yellow-800/50">
+                    <div class="text-4xl font-bold text-yellow-400" id="stat-total-doubts">0</div>
+                    <div class="text-gray-400">Doubts Solved</div>
+                </div>
+            </div>
+            
+            <!-- Weekly Chart -->
+            <div class="glass rounded-3xl p-6 mb-6">
+                <h3 class="text-xl font-bold mb-4 text-blue-400">📈 This Week's Focus</h3>
+                <div id="weekly-chart" class="flex items-end justify-between h-40 gap-2">
+                    <!-- Chart bars will be generated -->
+                </div>
+                <div class="flex justify-between mt-2 text-sm text-gray-400">
+                    <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+                </div>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- Focus History -->
+                <div class="glass rounded-3xl p-6">
+                    <h3 class="text-xl font-bold mb-4 text-purple-400">📅 Focus Sessions</h3>
+                    <div id="focus-history" class="space-y-2 max-h-80 overflow-y-auto">
+                        <p class="text-gray-500 text-center">No sessions recorded</p>
+                    </div>
+                </div>
+                
+                <!-- YouTube History -->
+                <div class="glass rounded-3xl p-6">
+                    <h3 class="text-xl font-bold mb-4 text-red-400">📺 YouTube Sessions</h3>
+                    <div id="yt-full-history" class="space-y-2 max-h-80 overflow-y-auto">
+                        <p class="text-gray-500 text-center">No YouTube sessions</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Export & Clear -->
+            <div class="mt-6 flex justify-center gap-4">
+                <button onclick="exportData()" class="px-6 py-3 bg-blue-600 rounded-xl font-semibold hover:bg-blue-700 transition">
+                    📤 Export Data
+                </button>
+                <button onclick="clearAllData()" class="px-6 py-3 bg-red-600 rounded-xl font-semibold hover:bg-red-700 transition">
+                    🗑️ Clear All Data
+                </button>
+            </div>
+        </section>
+
+        <!-- SETTINGS TAB -->
+        <section id="settings-tab" class="tab-content max-w-4xl mx-auto hidden">
+            <h2 class="text-3xl font-bold text-center mb-8 bg-gradient-to-r from-gray-400 to-gray-300 bg-clip-text text-transparent">
+                ⚙️ Settings
+            </h2>
+            
+            <div class="space-y-6">
+                <!-- Timer Settings -->
+                <div class="glass rounded-3xl p-6">
+                    <h3 class="text-xl font-bold mb-4 text-purple-400">⏱️ Timer Settings</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-gray-400 mb-2">Study Duration: <span id="study-duration-val">45</span> min</label>
+                            <input type="range" id="study-duration" min="25" max="90" value="45" 
+                                onchange="updateSetting('studyDuration', this.value)">
+                        </div>
+                        <div>
+                            <label class="block text-gray-400 mb-2">Short Break: <span id="short-break-val">5</span> min</label>
+                            <input type="range" id="short-break" min="5" max="15" value="5" 
+                                onchange="updateSetting('shortBreak', this.value)">
+                        </div>
+                        <div>
+                            <label class="block text-gray-400 mb-2">Long Break: <span id="long-break-val">15</span> min</label>
+                            <input type="range" id="long-break" min="15" max="30" value="15" 
+                                onchange="updateSetting('longBreak', this.value)">
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-400">Auto-start next session</span>
+                            <input type="checkbox" id="auto-start" class="w-5 h-5" onchange="updateSetting('autoStart', this.checked)">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sound Settings -->
+                <div class="glass rounded-3xl p-6">
+                    <h3 class="text-xl font-bold mb-4 text-green-400">🔊 Sound Settings</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-gray-400 mb-2">Notification Sound</label>
+                            <select id="notification-sound" class="w-full px-4 py-2 bg-gray-800 rounded-lg" onchange="updateSetting('sound', this.value)">
+                                <option value="bell">🔔 Bell</option>
+                                <option value="chime">🎵 Chime</option>
+                                <option value="nature">🌿 Nature</option>
+                                <option value="none">🔇 None</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-gray-400 mb-2">Volume: <span id="volume-val">70</span>%</label>
+                            <input type="range" id="volume" min="0" max="100" value="70" 
+                                onchange="updateSetting('volume', this.value)">
+                        </div>
+                        <button onclick="testSound()" class="px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600">🔊 Test Sound</button>
+                    </div>
+                </div>
+                
+                <!-- Focus Mode Settings -->
+                <div class="glass rounded-3xl p-6">
+                    <h3 class="text-xl font-bold mb-4 text-red-400">🔒 Focus Mode Settings</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-gray-400 mb-2">Default Focus Mode</label>
+                            <select id="default-focus-mode" class="w-full px-4 py-2 bg-gray-800 rounded-lg" onchange="updateSetting('focusMode', this.value)">
+                                <option value="gentle">🌿 Gentle - Reminder only</option>
+                                <option value="moderate">⚡ Moderate - Show warning</option>
+                                <option value="strict">🔒 Strict - Full screen block</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-400">Show motivational messages</span>
+                            <input type="checkbox" id="show-motivation" class="w-5 h-5" checked onchange="updateSetting('showMotivation', this.checked)">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Theme Settings -->
+                <div class="glass rounded-3xl p-6">
+                    <h3 class="text-xl font-bold mb-4 text-yellow-400">🎨 Appearance</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-400">Dark Mode</span>
+                            <input type="checkbox" id="dark-mode-toggle" class="w-5 h-5" checked onchange="toggleTheme()">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Secret -->
+                <div class="glass rounded-3xl p-6 opacity-50 hover:opacity-100 transition cursor-pointer" onclick="secretClick()">
+                    <p class="text-center text-gray-500 text-sm">🤫 Click me 5 times...</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Image Viewer Modal -->
+    <div id="image-modal" class="fixed inset-0 bg-black/90 z-50 hidden flex items-center justify-center p-4" onclick="closeImageModal()">
+        <img id="modal-image" class="max-w-full max-h-full object-contain rounded-lg">
+    </div>
+
+    <script>
+        // ============ STATE MANAGEMENT ============
+        let state = {
+            timer: {
+                minutes: 45,
+                seconds: 0,
+                isRunning: false,
+                interval: null,
+                session: 'study',
+                totalSeconds: 45 * 60,
+                sessionsToday: 0,
+                currentSession: 1
+            },
+            tree: {
+                growth: 0,
+                treesGrown: 0,
+                forest: []
+            },
+            youtube: {
+                isTracking: false,
+                interval: null,
+                sessionSeconds: 0,
+                totalMinutes: 0,
+                todayMinutes: 0,
+                history: [],
+                treeGrowth: 0,
+                trees: 0,
+                currentVideo: ''
+            },
+            doubts: [],
+            focusHistory: [],
+            totalFocusMinutes: 0,
+            todayFocusMinutes: 0,
+            doubtsSolved: 0,
+            streak: 0,
+            bestStreak: 0,
+            lastActiveDate: null,
+            browserHistory: [],
+            bookmarks: [],
+            browseTimeToday: 0,
+            settings: {
+                studyDuration: 45,
+                shortBreak: 5,
+                longBreak: 15,
+                autoStart: false,
+                sound: 'bell',
+                volume: 70,
+                focusMode: 'strict',
+                showMotivation: true,
+                darkMode: true
+            },
+            calendarMonth: new Date().getMonth(),
+            calendarYear: new Date().getFullYear(),
+            dailyData: {},
+            secretClicks: 0,
+            uploadedImages: []
+        };
+
+        const motivationalMessages = [
+            "Stay focused! Your tree is growing! 🌳",
+            "You're doing amazing! Keep it up! 💪",
+            "Every minute counts! 🕐",
+            "Future you will thank present you! 🙏",
+            "Small progress is still progress! 📈",
+            "You've got this! 🌟",
+            "Focus is your superpower! ⚡",
+            "Building habits, building success! 🏆",
+            "Your forest is growing! 🌲",
+            "Champions stay focused! 🏅"
+        ];
+
+        // Load from localStorage
+        function loadState() {
+            const saved = localStorage.getItem('focusForestState');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                Object.assign(state, parsed);
+                
+                // Check streak
+                checkStreak();
+            }
+            updateAllUI();
+        }
+
+        function saveState() {
+            state.lastActiveDate = new Date().toDateString();
+            localStorage.setItem('focusForestState', JSON.stringify(state));
+        }
+
+        function checkStreak() {
+            const today = new Date().toDateString();
+            const yesterday = new Date(Date.now() - 86400000).toDateString();
+            
+            if (state.lastActiveDate === yesterday) {
+                // Continue streak
+            } else if (state.lastActiveDate !== today) {
+                // Streak broken
+                state.streak = 0;
+            }
+            
+            if (state.lastActiveDate !== today) {
+                // New day - reset daily stats
+                state.todayFocusMinutes = 0;
+                state.youtube.todayMinutes = 0;
+                state.timer.sessionsToday = 0;
+                state.browseTimeToday = 0;
+            }
+        }
+
+        // ============ TAB NAVIGATION ============
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                b.classList.remove('tab-active');
+                b.classList.add('bg-gray-800');
+            });
+            
+            document.getElementById(`${tabName}-tab`).classList.remove('hidden');
+            document.getElementById(`tab-${tabName}`).classList.add('tab-active');
+            document.getElementById(`tab-${tabName}`).classList.remove('bg-gray-800');
+            
+            if (tabName === 'stats') updateStats();
+            if (tabName === 'calendar') renderCalendar();
+            if (tabName === 'forest') updateForest();
+            if (tabName === 'dashboard') updateDashboard();
+        }
+
+        // ============ THEME TOGGLE ============
+        function toggleTheme() {
+            document.body.classList.toggle('light-mode');
+            state.settings.darkMode = !document.body.classList.contains('light-mode');
+            document.getElementById('theme-toggle').textContent = state.settings.darkMode ? '🌙' : '☀️';
+            document.getElementById('dark-mode-toggle').checked = state.settings.darkMode;
+            saveState();
+        }
+
+        // ============ FULLSCREEN ============
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // ============ POMODORO TIMER ============
+        function updateTimerDisplay() {
+            const display = document.getElementById('timer-display');
+            const overlayDisplay = document.getElementById('overlay-timer');
+            const timeStr = `${String(state.timer.minutes).padStart(2, '0')}:${String(state.timer.seconds).padStart(2, '0')}`;
+            display.textContent = timeStr;
+            overlayDisplay.textContent = timeStr;
+            
+            // Update progress circle
+            const circle = document.getElementById('progress-circle');
+            const elapsed = state.timer.totalSeconds - (state.timer.minutes * 60 + state.timer.seconds);
+            const progress = elapsed / state.timer.totalSeconds;
+            const offset = 854 * (1 - progress);
+            circle.style.strokeDashoffset = offset;
+            
+            // Update session counter
+            document.getElementById('session-count').textContent = `Session ${state.timer.currentSession}/4`;
+        }
+
+        function quickStart(minutes) {
+            state.settings.studyDuration = minutes;
+            state.timer.minutes = minutes;
+            state.timer.seconds = 0;
+            state.timer.totalSeconds = minutes * 60;
+            state.timer.session = 'study';
+            showTab('timer');
+            startTimer();
+        }
+
+        function startTimer() {
+            if (state.timer.isRunning) return;
+            state.timer.isRunning = true;
+            
+            document.getElementById('start-btn').classList.add('hidden');
+            document.getElementById('pause-btn').classList.remove('hidden');
+            
+            // Show focus overlay for study sessions in strict mode
+            if (state.timer.session === 'study' && state.settings.focusMode === 'strict') {
+                document.getElementById('focus-overlay').classList.add('active');
+                startMotivationRotation();
+            }
+            
+            state.timer.interval = setInterval(() => {
+                if (state.timer.seconds === 0) {
+                    if (state.timer.minutes === 0) {
+                        timerComplete();
+                        return;
+                    }
+                    state.timer.minutes--;
+                    state.timer.seconds = 59;
+                } else {
+                    state.timer.seconds--;
+                }
+                
+                updateTimerDisplay();
+                
+                // Grow tree during study session
+                if (state.timer.session === 'study') {
+                    const elapsed = state.timer.totalSeconds - (state.timer.minutes * 60 + state.timer.seconds);
+                    state.tree.growth = Math.min(100, (elapsed / state.timer.totalSeconds) * 100);
+                    updateTreeVisual('main');
+                    updateTreeVisual('overlay');
+                    updateTreeVisual('dash');
+                }
+            }, 1000);
+        }
+
+        let motivationInterval;
+        function startMotivationRotation() {
+            motivationInterval = setInterval(() => {
+                const msg = motivationalMessages[Math.floor(Math.random() * motivationalMessages.length)];
+                document.getElementById('motivation-text').textContent = msg;
+            }, 5000);
+        }
+
+        function pauseTimer() {
+            state.timer.isRunning = false;
+            clearInterval(state.timer.interval);
+            clearInterval(motivationInterval);
+            
+            document.getElementById('start-btn').classList.remove('hidden');
+            document.getElementById('pause-btn').classList.add('hidden');
+            document.getElementById('focus-overlay').classList.remove('active');
+        }
+
+        function resetTimer() {
+            pauseTimer();
+            setSession(state.timer.session);
+            state.tree.growth = 0;
+            updateTreeVisual('main');
+            updateTreeVisual('dash');
+        }
+
+        function setSession(type) {
+            pauseTimer();
+            state.timer.session = type;
+            const times = { 
+                study: state.settings.studyDuration, 
+                short: state.settings.shortBreak, 
+                long: state.settings.longBreak 
+            };
+            const labels = { study: 'Study Session', short: 'Short Break', long: 'Long Break' };
+            
+            state.timer.minutes = times[type];
+            state.timer.seconds = 0;
+            state.timer.totalSeconds = times[type] * 60;
+            
+            document.getElementById('timer-label').textContent = labels[type];
+            updateTimerDisplay();
+            
+            ['study', 'short', 'long'].forEach(s => {
+                document.getElementById(`${s}-btn`).classList.toggle('bg-purple-600', s === type);
+                document.getElementById(`${s}-btn`).classList.toggle('bg-gray-700', s !== type);
+            });
+            
+            document.getElementById('progress-circle').style.strokeDashoffset = 0;
+        }
+
+        function emergencyUnlock() {
+            if (confirm('⚠️ Are you sure? Your tree will wither and progress will be lost!')) {
+                state.tree.growth = Math.max(0, state.tree.growth - 20);
+                updateTreeVisual('main');
+                pauseTimer();
+                resetTimer();
+            }
+        }
+
+        function timerComplete() {
+            pauseTimer();
+            playNotificationSound();
+            
+            if (state.timer.session === 'study') {
+                const duration = state.settings.studyDuration;
+                state.tree.treesGrown++;
+                state.totalFocusMinutes += duration;
+                state.todayFocusMinutes += duration;
+                state.timer.sessionsToday++;
+                
+                // Add to forest
+                state.tree.forest.push({
+                    date: new Date().toISOString(),
+                    duration: duration,
+                    type: 'pomodoro'
+                });
+                
+                // Add to history
+                state.focusHistory.unshift({
+                    date: new Date().toLocaleString(),
+                    duration: duration,
+                    type: 'Pomodoro'
+                });
+                
+                // Add to daily data
+                const today = new Date().toDateString();
+                if (!state.dailyData[today]) {
+                    state.dailyData[today] = { focus: 0, youtube: 0, doubts: [], sessions: 0 };
+                }
+                state.dailyData[today].focus += duration;
+                state.dailyData[today].sessions++;
+                
+                // Update streak
+                if (state.lastActiveDate !== today) {
+                    state.streak++;
+                    state.bestStreak = Math.max(state.bestStreak, state.streak);
+                }
+                
+                state.tree.growth = 100;
+                updateTreeVisual('main');
+                saveState();
+                
+                alert('🎉 Amazing! You completed a focus session! Your tree has grown! 🌳');
+                
+                // Auto-start break if enabled
+                if (state.settings.autoStart) {
+                    state.timer.currentSession++;
+                    if (state.timer.currentSession > 4) {
+                        state.timer.currentSession = 1;
+                        setSession('long');
+                    } else {
+                        setSession('short');
+                    }
+                    setTimeout(startTimer, 1000);
+                }
+            } else {
+                alert('☕ Break time is over! Ready to focus again? 💪');
+                if (state.settings.autoStart) {
+                    setSession('study');
+                    setTimeout(startTimer, 1000);
+                }
+            }
+            
+            state.tree.growth = 0;
+            updateAllUI();
+        }
+
+        function updateTreeVisual(prefix) {
+            const growth = state.tree.growth;
+            const trunk = document.getElementById(`${prefix === 'main' ? '' : prefix + '-'}trunk`);
+            const leaf1 = document.getElementById(`${prefix === 'main' ? '' : prefix + '-'}leaf1`);
+            const leaf2 = document.getElementById(`${prefix === 'main' ? '' : prefix + '-'}leaf2`);
+            const leaf3 = document.getElementById(`${prefix === 'main' ? '' : prefix + '-'}leaf3`);
+            
+            if (!trunk) return;
+            
+            trunk.style.height = `${30 + growth * 1.2}px`;
+            
+            if (growth > 15) {
+                leaf1.style.width = `${Math.min(100, (growth - 15) * 2)}px`;
+                leaf1.style.height = `${Math.min(100, (growth - 15) * 2)}px`;
+            } else {
+                leaf1.style.width = '0';
+                leaf1.style.height = '0';
+            }
+            
+            if (growth > 40) {
+                leaf2.style.width = `${Math.min(80, (growth - 40) * 2)}px`;
+                leaf2.style.height = `${Math.min(80, (growth - 40) * 2)}px`;
+            } else {
+                leaf2.style.width = '0';
+                leaf2.style.height = '0';
+            }
+            
+            if (growth > 70) {
+                leaf3.style.width = `${Math.min(50, (growth - 70) * 2)}px`;
+                leaf3.style.height = `${Math.min(50, (growth - 70) * 2)}px`;
+            } else {
+                leaf3.style.width = '0';
+                leaf3.style.height = '0';
+            }
+            
+            // Update progress bar and stage
+            if (prefix === 'main') {
+                document.getElementById('tree-progress').style.width = `${growth}%`;
+                document.getElementById('growth-percent').textContent = `${Math.round(growth)}%`;
+                
+                const stages = ['🌱 Seed Stage', '🌿 Sprout Stage', '🌲 Sapling Stage', '🌳 Young Tree', '🌳✨ Flourishing Tree'];
+                const stageIndex = Math.min(4, Math.floor(growth / 25));
+                document.getElementById('tree-stage').textContent = stages[stageIndex];
+            }
+            
+            if (prefix === 'dash') {
+                const stages = ['🌱 Seed', '🌿 Sprout', '🌲 Sapling', '🌳 Tree', '🌳✨ Flourishing'];
+                const stageIndex = Math.min(4, Math.floor(growth / 25));
+                document.getElementById('dash-tree-stage').textContent = stages[stageIndex];
+            }
+        }
+
+        // ============ YOUTUBE TRACKING ============
+        function loadYouTube() {
+            const url = document.getElementById('youtube-url').value.trim();
+            if (!url) return;
+            
+            let videoId = '';
+            if (url.includes('youtube.com/watch')) {
+                videoId = new URL(url).searchParams.get('v');
+            } else if (url.includes('youtu.be/')) {
+                videoId = url.split('youtu.be/')[1].split('?')[0];
+            } else if (url.includes('youtube.com/embed/')) {
+                videoId = url.split('embed/')[1].split('?')[0];
+            }
+            
+            if (videoId) {
+                state.youtube.currentVideo = url;
+                document.getElementById('youtube-player').innerHTML = 
+                    `<iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1" class="w-full h-full rounded-xl" frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen></iframe>`;
+            } else {
+                alert('Invalid YouTube URL. Please enter a valid YouTube video link.');
+            }
+        }
+
+        function startYTTracking() {
+            if (state.youtube.isTracking) return;
+            state.youtube.isTracking = true;
+            state.youtube.sessionSeconds = 0;
+            state.youtube.treeGrowth = 0;
+            
+            document.getElementById('yt-start').classList.add('hidden');
+            document.getElementById('yt-pause').classList.remove('hidden');
+            document.getElementById('yt-stop').classList.remove('hidden');
+            
+            state.youtube.interval = setInterval(() => {
+                state.youtube.sessionSeconds++;
+                updateYTTimeDisplay();
+                
+                // Grow tree (full in 30 min)
+                state.youtube.treeGrowth = Math.min(100, (state.youtube.sessionSeconds / 1800) * 100);
+                updateYTTree();
+            }, 1000);
+        }
+
+        function pauseYTTracking() {
+            state.youtube.isTracking = false;
+            clearInterval(state.youtube.interval);
+            
+            document.getElementById('yt-start').classList.remove('hidden');
+            document.getElementById('yt-pause').classList.add('hidden');
+        }
+
+        function stopYTTracking() {
+            state.youtube.isTracking = false;
+            clearInterval(state.youtube.interval);
+            
+            document.getElementById('yt-start').classList.remove('hidden');
+            document.getElementById('yt-pause').classList.add('hidden');
+            document.getElementById('yt-stop').classList.add('hidden');
+            
+            const minutes = Math.round(state.youtube.sessionSeconds / 60);
+            if (minutes > 0) {
+                state.youtube.totalMinutes += minutes;
+                state.youtube.todayMinutes += minutes;
+                
+                // Add tree if watched 30+ min
+                if (state.youtube.sessionSeconds >= 1800) {
+                    state.youtube.trees++;
+                    state.tree.forest.push({
+                        date: new Date().toISOString(),
+                        duration: minutes,
+                        type: 'youtube'
+                    });
+                }
+                
+                state.youtube.history.unshift({
+                    date: new Date().toLocaleString(),
+                    duration: minutes,
+                    url: state.youtube.currentVideo || 'Unknown',
+                    category: document.getElementById('video-category').value || 'General'
+                });
+                
+                // Add to daily data
+                const today = new Date().toDateString();
+                if (!state.dailyData[today]) {
+                    state.dailyData[today] = { focus: 0, youtube: 0, doubts: [], sessions: 0 };
+                }
+                state.dailyData[today].youtube += minutes;
+                
+                saveState();
+            }
+            
+            state.youtube.sessionSeconds = 0;
+            state.youtube.treeGrowth = 0;
+            updateYTTimeDisplay();
+            updateYTTree();
+            updateYTHistory();
+            updateYTStats();
+        }
+
+        function updateYTTimeDisplay() {
+            const hrs = Math.floor(state.youtube.sessionSeconds / 3600);
+            const mins = Math.floor((state.youtube.sessionSeconds % 3600) / 60);
+            const secs = state.youtube.sessionSeconds % 60;
+            document.getElementById('yt-session-time').textContent = 
+                `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        function updateYTTree() {
+            const growth = state.youtube.treeGrowth;
+            const trunk = document.getElementById('yt-trunk');
+            const leaf1 = document.getElementById('yt-leaf1');
+            const leaf2 = document.getElementById('yt-leaf2');
+            const leaf3 = document.getElementById('yt-leaf3');
+            
+            trunk.style.height = `${30 + growth * 1.2}px`;
+            
+            if (growth > 15) {
+                leaf1.style.width = `${Math.min(100, (growth - 15) * 2)}px`;
+                leaf1.style.height = `${Math.min(100, (growth - 15) * 2)}px`;
+            }
+            if (growth > 40) {
+                leaf2.style.width = `${Math.min(80, (growth - 40) * 2)}px`;
+                leaf2.style.height = `${Math.min(80, (growth - 40) * 2)}px`;
+            }
+            if (growth > 70) {
+                leaf3.style.width = `${Math.min(50, (growth - 70) * 2)}px`;
+                leaf3.style.height = `${Math.min(50, (growth - 70) * 2)}px`;
+            }
+            
+            document.getElementById('yt-tree-progress').style.width = `${growth}%`;
+        }
+
+        function updateYTHistory() {
+            const container = document.getElementById('yt-history');
+            if (state.youtube.history.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-sm text-center">No videos watched yet</p>';
+                return;
+            }
+            
+            container.innerHTML = state.youtube.history.slice(0, 10).map(h => `
+                <div class="bg-gray-800/50 p-3 rounded-lg">
+                    <p class="text-red-400 font-bold">${h.duration} min</p>
+                    <p class="text-gray-400 text-xs">${h.date}</p>
+                    <p class="text-gray-500 text-xs truncate">${h.category}</p>
+                </div>
+            `).join('');
+        }
+
+        function updateYTStats() {
+            document.getElementById('yt-today').textContent = `${state.youtube.todayMinutes} min`;
+            document.getElementById('yt-total').textContent = `${state.youtube.totalMinutes} min`;
+            
+            // Calculate week
+            const weekStart = new Date();
+            weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+            let weekMin = 0;
+            state.youtube.history.forEach(h => {
+                const hDate = new Date(h.date);
+                if (hDate >= weekStart) weekMin += h.duration;
+            });
+            document.getElementById('yt-week').textContent = `${weekMin} min`;
+        }
+
+        function quickAddDoubt() {
+            const text = document.getElementById('quick-doubt').value.trim();
+            if (!text) return;
+            
+            const doubt = {
+                id: Date.now(),
+                title: text,
+                desc: `Added while watching: ${state.youtube.currentVideo || 'Unknown video'}`,
+                subject: '',
+                priority: 'medium',
+                status: 'pending',
+                images: [],
+                date: new Date().toLocaleString(),
+                video: state.youtube.currentVideo
+            };
+            
+            state.doubts.unshift(doubt);
+            saveState();
+            document.getElementById('quick-doubt').value = '';
+            updateDoubtsUI();
+            alert('✅ Doubt saved! You can view it in the Doubts tab.');
+        }
+
+        // ============ DOUBTS MANAGEMENT ============
+        function handleImageUpload(event) {
+            const files = event.target.files;
+            state.uploadedImages = [];
+            
+            const previewContainer = document.getElementById('image-previews');
+            previewContainer.innerHTML = '';
+            document.getElementById('upload-placeholder').classList.add('hidden');
+            
+            Array.from(files).forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    state.uploadedImages.push(e.target.result);
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'w-16 h-16 object-cover rounded-lg cursor-pointer';
+                    img.onclick = (ev) => { ev.stopPropagation(); openImageModal(e.target.result); };
+                    previewContainer.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function addDoubt() {
+            const title = document.getElementById('doubt-title').value.trim();
+            const desc = document.getElementById('doubt-desc').value.trim();
+            const subject = document.getElementById('doubt-subject').value;
+            const priority = document.getElementById('doubt-priority').value;
+            const video = document.getElementById('doubt-video').value.trim();
+            
+            if (!title) {
+                alert('Please enter a doubt title!');
+                return;
+            }
+            
+            const doubt = {
+                id: Date.now(),
+                title,
+                desc,
+                subject,
+                priority,
+                status: 'pending',
+                images: [...state.uploadedImages],
+                date: new Date().toLocaleString(),
+                video
+            };
+            
+            state.doubts.unshift(doubt);
+            
+            // Add to daily data
+            const today = new Date().toDateString();
+            if (!state.dailyData[today]) {
+                state.dailyData[today] = { focus: 0, youtube: 0, doubts: [], sessions: 0 };
+            }
+            state.dailyData[today].doubts.push(doubt.title);
+            
+            saveState();
+            clearDoubtForm();
+            updateDoubtsUI();
+        }
+
+        function clearDoubtForm() {
+            document.getElementById('doubt-title').value = '';
+            document.getElementById('doubt-desc').value = '';
+            document.getElementById('doubt-subject').value = '';
+            document.getElementById('doubt-priority').value = 'low';
+            document.getElementById('doubt-video').value = '';
+            document.getElementById('doubt-images').value = '';
+            document.getElementById('image-previews').innerHTML = '';
+            document.getElementById('upload-placeholder').classList.remove('hidden');
+            state.uploadedImages = [];
+        }
+
+        function toggleDoubtStatus(id) {
+            const doubt = state.doubts.find(d => d.id === id);
+            if (doubt) {
+                doubt.status = doubt.status === 'pending' ? 'solved' : 'pending';
+                if (doubt.status === 'solved') state.doubtsSolved++;
+                saveState();
+                updateDoubtsUI();
+            }
+        }
+
+        function deleteDoubt(id) {
+            if (confirm('Delete this doubt?')) {
+                state.doubts = state.doubts.filter(d => d.id !== id);
+                saveState();
+                updateDoubtsUI();
+            }
+        }
+
+        function filterDoubts() {
+            updateDoubtsUI();
+        }
+
+        function updateDoubtsUI() {
+            const statusFilter = document.getElementById('doubt-filter-status').value;
+            const subjectFilter = document.getElementById('doubt-filter-subject').value;
+            const priorityFilter = document.getElementById('doubt-filter-priority').value;
+            const searchTerm = document.getElementById('doubt-search').value.toLowerCase();
+            
+            let filtered = state.doubts.filter(d => {
+                if (statusFilter !== 'all' && d.status !== statusFilter) return false;
+                if (subjectFilter !== 'all' && d.subject !== subjectFilter) return false;
+                if (priorityFilter !== 'all' && d.priority !== priorityFilter) return false;
+                if (searchTerm && !d.title.toLowerCase().includes(searchTerm) && !d.desc.toLowerCase().includes(searchTerm)) return false;
+                return true;
+            });
+            
+            const container = document.getElementById('doubts-list');
+            
+            if (filtered.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 col-span-full text-center py-10">No doubts found</p>';
+            } else {
+                container.innerHTML = filtered.map(d => {
+                    const priorityColors = { low: 'bg-green-600', medium: 'bg-yellow-600', high: 'bg-red-600' };
+                    const subjectIcons = { math: '📐', physics: '⚛️', chemistry: '🧪', biology: '🧬', cs: '💻', other: '📚' };
+                    
+                    return `
+                        <div class="glass rounded-2xl p-4 hover-card ${d.status === 'solved' ? 'opacity-60' : ''}">
+                            <div class="flex justify-between items-start mb-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xl">${subjectIcons[d.subject] || '❓'}</span>
+                                    <h4 class="font-bold ${d.status === 'solved' ? 'line-through text-gray-400' : 'text-yellow-400'}">${escapeHtml(d.title)}</h4>
+                                </div>
+                                <span class="${priorityColors[d.priority]} text-xs px-2 py-1 rounded-full">${d.priority}</span>
+                            </div>
+                            ${d.desc ? `<p class="text-gray-300 text-sm mb-2">${escapeHtml(d.desc)}</p>` : ''}
+                            ${d.images.length > 0 ? `
+                                <div class="flex flex-wrap gap-2 mb-2">
+                                    ${d.images.map(img => `<img src="${img}" class="w-16 h-16 object-cover rounded-lg cursor-pointer" onclick="openImageModal('${img}')">`).join('')}
+                                </div>
+                            ` : ''}
+                            <p class="text-gray-500 text-xs mb-3">📅 ${d.date}</p>
+                            <div class="flex gap-2">
+                                <button onclick="toggleDoubtStatus(${d.id})" class="px-3 py-1 ${d.status === 'solved' ? 'bg-yellow-600' : 'bg-green-600'} rounded-lg text-sm">
+                                    ${d.status === 'solved' ? '↩️ Reopen' : '✅ Solved'}
+                                </button>
+                                <button onclick="deleteDoubt(${d.id})" class="px-3 py-1 bg-red-600 rounded-lg text-sm">🗑️</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            // Update stats
+            document.getElementById('total-doubts').textContent = state.doubts.length;
+            document.getElementById('pending-doubts').textContent = state.doubts.filter(d => d.status === 'pending').length;
+            document.getElementById('solved-doubts').textContent = state.doubts.filter(d => d.status === 'solved').length;
+            document.getElementById('high-priority-doubts').textContent = state.doubts.filter(d => d.priority === 'high' && d.status === 'pending').length;
+            
+            // Update badge
+            const pendingCount = state.doubts.filter(d => d.status === 'pending').length;
+            const badge = document.getElementById('doubts-badge');
+            if (pendingCount > 0) {
+                badge.textContent = pendingCount;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        function openImageModal(src) {
+            document.getElementById('modal-image').src = src;
+            document.getElementById('image-modal').classList.remove('hidden');
+        }
+
+        function closeImageModal() {
+            document.getElementById('image-modal').classList.add('hidden');
+        }
+
+        // ============ BROWSER ============
+        function loadURL() {
+            let url = document.getElementById('browser-url').value.trim();
+            if (!url) return;
+            
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                // Check if it's a search query
+                if (!url.includes('.')) {
+                    url = `https://www.google.com/search?q=${encodeURIComponent(url)}`;
+                } else {
+                    url = 'https://' + url;
+                }
+            }
+            
+            document.getElementById('browser-frame').src = url;
+            addToBrowserHistory(url);
+        }
+
+        function quickLoad(url) {
+            document.getElementById('browser-url').value = url;
+            document.getElementById('browser-frame').src = url;
+            addToBrowserHistory(url);
+        }
+
+        function browserBack() {
+            try { document.getElementById('browser-frame').contentWindow.history.back(); } catch(e) {}
+        }
+
+        function browserForward() {
+            try { document.getElementById('browser-frame').contentWindow.history.forward(); } catch(e) {}
+        }
+
+        function browserRefresh() {
+            const frame = document.getElementById('browser-frame');
+            frame.src = frame.src;
+        }
+
+        function browserHome() {
+            document.getElementById('browser-frame').src = 'https://www.google.com/webhp?igu=1';
+            document.getElementById('browser-url').value = '';
+        }
+
+        function addToBrowserHistory(url) {
+            state.browserHistory.unshift({
+                url,
+                date: new Date().toLocaleString()
+            });
+            if (state.browserHistory.length > 50) state.browserHistory.pop();
+            saveState();
+            updateBrowserHistoryUI();
+        }
+
+        function addBookmark() {
+            const url = document.getElementById('browser-url').value.trim();
+            if (!url) return;
+            
+            if (!state.bookmarks.find(b => b.url === url)) {
+                const title = prompt('Bookmark title:', url);
+                if (title) {
+                    state.bookmarks.push({ url, title });
+                    saveState();
+                    updateBookmarksUI();
+                }
+            }
+        }
+
+        function toggleBookmarks() {
+            document.getElementById('bookmarks-panel').classList.toggle('hidden');
+        }
+
+        function toggleBrowserHistory() {
+            document.getElementById('browser-history-panel').classList.toggle('hidden');
+        }
+
+        function updateBookmarksUI() {
+            const container = document.getElementById('bookmarks-list');
+            if (state.bookmarks.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-sm">No bookmarks yet</p>';
+            } else {
+                container.innerHTML = state.bookmarks.map((b, i) => `
+                    <div class="flex items-center gap-2">
+                        <button onclick="quickLoad('${b.url}')" class="px-3 py-1 bg-gray-700 rounded-lg text-sm hover:bg-gray-600">${escapeHtml(b.title)}</button>
+                        <button onclick="removeBookmark(${i})" class="text-red-400 text-xs">✕</button>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function removeBookmark(index) {
+            state.bookmarks.splice(index, 1);
+            saveState();
+            updateBookmarksUI();
+        }
+
+        function updateBrowserHistoryUI() {
+            const container = document.getElementById('browser-history-list');
+            if (state.browserHistory.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-sm">No history yet</p>';
+            } else {
+                container.innerHTML = state.browserHistory.slice(0, 20).map(h => `
+                    <div class="flex items-center justify-between text-sm">
+                        <button onclick="quickLoad('${h.url}')" class="text-blue-400 hover:underline truncate max-w-xs">${escapeHtml(h.url)}</button>
+                        <span class="text-gray-500 text-xs">${h.date}</span>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // ============ FOREST ============
+        function updateForest() {
+            document.getElementById('forest-trees').textContent = state.tree.treesGrown + state.youtube.trees;
+            document.getElementById('forest-hours').textContent = Math.round((state.totalFocusMinutes + state.youtube.totalMinutes) / 60);
+            document.getElementById('forest-streak').textContent = state.bestStreak;
+            document.getElementById('forest-yt-trees').textContent = state.youtube.trees;
+            
+            const grid = document.getElementById('forest-grid');
+            const totalTrees = state.tree.forest.length;
+            
+            if (totalTrees === 0) {
+                grid.innerHTML = '<p class="text-gray-500 col-span-full text-center py-10">No trees grown yet. Start focusing to grow your forest! 🌱</p>';
+            } else {
+                grid.innerHTML = state.tree.forest.map((t, i) => {
+                    const isYT = t.type === 'youtube';
+                    return `
+                        <div class="forest-tree flex flex-col items-center p-2 glass rounded-xl cursor-pointer" title="${new Date(t.date).toLocaleDateString()} - ${t.duration}min">
+                            <div class="text-3xl">${isYT ? '📚' : '🌳'}</div>
+                            <div class="text-xs text-gray-400">${t.duration}m</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            // Update achievements
+            updateAchievements();
+        }
+
+        function updateAchievements() {
+            const achievements = document.getElementById('achievements');
+            const totalTrees = state.tree.treesGrown + state.youtube.trees;
+            const totalHours = (state.totalFocusMinutes + state.youtube.totalMinutes) / 60;
+            const ytHours = state.youtube.totalMinutes / 60;
+            
+            const achieved = [];
+            if (totalTrees >= 1) achieved.push('🌱 First Seed');
+            if (totalTrees >= 10) achieved.push('🌳 10 Trees');
+            if (totalTrees >= 50) achieved.push('🌲 50 Trees');
+            if (totalTrees >= 100) achieved.push('🏆 100 Trees');
+            if (totalHours >= 1) achieved.push('⭐ 1 Hour Focus');
+            if (state.streak >= 7) achieved.push('🔥 7 Day Streak');
+            if (state.bestStreak >= 30) achieved.push('💎 30 Day Streak');
+            if (ytHours >= 10) achieved.push('📚 10 Hour YouTube');
+            
+            achievements.innerHTML = ['🌱 First Seed', '🌳 10 Trees', '🌲 50 Trees', '🏆 100 Trees', '⭐ 1 Hour Focus', '🔥 7 Day Streak', '💎 30 Day Streak', '📚 10 Hour YouTube'].map(a => 
+                `<div class="achievement ${achieved.includes(a) ? '' : 'opacity-30'}">${a}</div>`
+            ).join('');
+        }
+
+        // ============ CALENDAR ============
+        function renderCalendar() {
+            const year = state.calendarYear;
+            const month = state.calendarMonth;
+            
+            document.getElementById('calendar-title').textContent = new Date(year, month).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+            
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const today = new Date();
+            
+            let html = '';
+            
+            // Empty cells for days before month starts
+            for (let i = 0; i < firstDay; i++) {
+                html += '<div></div>';
+            }
+            
+            // Day cells
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = new Date(year, month, day).toDateString();
+                const hasActivity = state.dailyData[dateStr] && (state.dailyData[dateStr].focus > 0 || state.dailyData[dateStr].youtube > 0);
+                const isToday = today.getDate() === day && today.getMonth() === month && today.getFullYear() === year;
+                
+                html += `
+                    <button onclick="showDayDetails('${dateStr}')" 
+                        class="calendar-day aspect-square rounded-lg flex items-center justify-center font-medium ${hasActivity ? 'has-activity text-white' : 'bg-gray-800'} ${isToday ? 'today' : ''}">
+                        ${day}
+                    </button>
+                `;
+            }
+            
+            document.getElementById('calendar-grid').innerHTML = html;
+        }
+
+        function prevMonth() {
+            state.calendarMonth--;
+            if (state.calendarMonth < 0) {
+                state.calendarMonth = 11;
+                state.calendarYear--;
+            }
+            renderCalendar();
+        }
+
+        function nextMonth() {
+            state.calendarMonth++;
+            if (state.calendarMonth > 11) {
+                state.calendarMonth = 0;
+                state.calendarYear++;
+            }
+            renderCalendar();
+        }
+
+        function showDayDetails(dateStr) {
+            document.getElementById('selected-date-title').textContent = new Date(dateStr).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+            
+            const data = state.dailyData[dateStr];
+            const container = document.getElementById('day-details');
+            
+            if (!data) {
+                container.innerHTML = '<p class="text-gray-500 text-center">No activity on this day</p>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <div class="space-y-4">
+                    <div class="glass rounded-xl p-4">
+                        <div class="text-3xl mb-2">⏱️</div>
+                        <div class="text-2xl font-bold text-purple-400">${data.focus} min</div>
+                        <div class="text-gray-400 text-sm">Focus Time</div>
+                    </div>
+                    <div class="glass rounded-xl p-4">
+                        <div class="text-3xl mb-2">📺</div>
+                        <div class="text-2xl font-bold text-red-400">${data.youtube} min</div>
+                        <div class="text-gray-400 text-sm">YouTube Time</div>
+                    </div>
+                    <div class="glass rounded-xl p-4">
+                        <div class="text-3xl mb-2">🍅</div>
+                        <div class="text-2xl font-bold text-green-400">${data.sessions}</div>
+                        <div class="text-gray-400 text-sm">Sessions Completed</div>
+                    </div>
+                    ${data.doubts.length > 0 ? `
+                        <div class="glass rounded-xl p-4">
+                            <div class="text-xl font-bold text-yellow-400 mb-2">❓ Doubts Added</div>
+                            <ul class="text-sm text-gray-300 list-disc list-inside">
+                                ${data.doubts.map(d => `<li>${escapeHtml(d)}</li>`).join('')}
+                            </ul>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        // ============ STATS ============
+        function updateStats() {
+            document.getElementById('stat-total-focus').textContent = state.totalFocusMinutes;
+            document.getElementById('stat-total-youtube').textContent = state.youtube.totalMinutes;
+            document.getElementById('stat-total-trees').textContent = state.tree.treesGrown + state.youtube.trees;
+            document.getElementById('stat-total-doubts').textContent = state.doubtsSolved;
+            
+            // Weekly chart
+            const chartContainer = document.getElementById('weekly-chart');
+            const weekData = [];
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                const dateStr = date.toDateString();
+                const data = state.dailyData[dateStr] || { focus: 0 };
+                weekData.push(data.focus);
+            }
+            
+            const maxVal = Math.max(...weekData, 1);
+            chartContainer.innerHTML = weekData.map(val => `
+                <div class="flex-1 bg-gradient-to-t from-purple-600 to-pink-500 rounded-t-lg transition-all" 
+                    style="height: ${(val / maxVal) * 100}%"
+                    title="${val} min"></div>
+            `).join('');
+            
+            // Focus history
+            const focusContainer = document.getElementById('focus-history');
+            if (state.focusHistory.length === 0) {
+                focusContainer.innerHTML = '<p class="text-gray-500 text-center">No sessions recorded</p>';
+            } else {
+                focusContainer.innerHTML = state.focusHistory.slice(0, 20).map(h => `
+                    <div class="flex justify-between items-center bg-gray-800/50 p-3 rounded-lg">
+                        <div>
+                            <p class="text-purple-400 font-bold">${h.duration} min</p>
+                            <p class="text-gray-500 text-xs">${h.date}</p>
+                        </div>
+                        <span class="text-green-400">🌳</span>
+                    </div>
+                `).join('');
+            }
+            
+            // YouTube history
+            const ytContainer = document.getElementById('yt-full-history');
+            if (state.youtube.history.length === 0) {
+                ytContainer.innerHTML = '<p class="text-gray-500 text-center">No YouTube sessions</p>';
+            } else {
+                ytContainer.innerHTML = state.youtube.history.slice(0, 20).map(h => `
+                    <div class="bg-gray-800/50 p-3 rounded-lg">
+                        <p class="text-red-400 font-bold">${h.duration} min</p>
+                        <p class="text-gray-500 text-xs">${h.date}</p>
+                        <p class="text-gray-600 text-xs truncate">${escapeHtml(h.category || '')}</p>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function exportData() {
+            const dataStr = JSON.stringify(state, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `focusforest-data-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+        }
+
+        function clearAllData() {
+            if (confirm('⚠️ Are you sure you want to delete ALL data? This cannot be undone!')) {
+                if (confirm('This is your last chance! All trees, history, and doubts will be deleted permanently.')) {
+                    localStorage.removeItem('focusForestState');
+                    location.reload();
+                }
+            }
+        }
+
+        // ============ SETTINGS ============
+        function updateSetting(key, value) {
+            if (key === 'studyDuration') {
+                state.settings.studyDuration = parseInt(value);
+                document.getElementById('study-duration-val').textContent = value;
+                if (state.timer.session === 'study') setSession('study');
+            } else if (key === 'shortBreak') {
+                state.settings.shortBreak = parseInt(value);
+                document.getElementById('short-break-val').textContent = value;
+            } else if (key === 'longBreak') {
+                state.settings.longBreak = parseInt(value);
+                document.getElementById('long-break-val').textContent = value;
+            } else if (key === 'volume') {
+                state.settings.volume = parseInt(value);
+                document.getElementById('volume-val').textContent = value;
+            } else {
+                state.settings[key] = value;
+            }
+            saveState();
+        }
+
+        function loadSettings() {
+            document.getElementById('study-duration').value = state.settings.studyDuration;
+            document.getElementById('study-duration-val').textContent = state.settings.studyDuration;
+            document.getElementById('short-break').value = state.settings.shortBreak;
+            document.getElementById('short-break-val').textContent = state.settings.shortBreak;
+            document.getElementById('long-break').value = state.settings.longBreak;
+            document.getElementById('long-break-val').textContent = state.settings.longBreak;
+            document.getElementById('volume').value = state.settings.volume;
+            document.getElementById('volume-val').textContent = state.settings.volume;
+            document.getElementById('auto-start').checked = state.settings.autoStart;
+            document.getElementById('notification-sound').value = state.settings.sound;
+            document.getElementById('default-focus-mode').value = state.settings.focusMode;
+            document.getElementById('focus-mode-select').value = state.settings.focusMode;
+            document.getElementById('show-motivation').checked = state.settings.showMotivation;
+            document.getElementById('dark-mode-toggle').checked = state.settings.darkMode;
+            
+            if (!state.settings.darkMode) {
+                document.body.classList.add('light-mode');
+                document.getElementById('theme-toggle').textContent = '☀️';
+            }
+        }
+
+        function playNotificationSound() {
+            if (state.settings.sound === 'none') return;
+            
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = ctx.createOscillator();
+                const gainNode = ctx.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(ctx.destination);
+                
+                gainNode.gain.value = state.settings.volume / 100;
+                
+                if (state.settings.sound === 'bell') {
+                    oscillator.frequency.value = 800;
+                } else if (state.settings.sound === 'chime') {
+                    oscillator.frequency.value = 1200;
+                } else {
+                    oscillator.frequency.value = 400;
+                }
+                
+                oscillator.start();
+                setTimeout(() => oscillator.stop(), 300);
+            } catch (e) {}
+        }
+
+        function testSound() {
+            playNotificationSound();
+        }
+
+        // ============ SECRET FEATURE ============
+        function secretClick() {
+            state.secretClicks++;
+            if (state.secretClicks >= 5) {
+                state.secretClicks = 0;
+                activateSecretMode();
+            }
+        }
+
+        function activateSecretMode() {
+            document.body.classList.add('rainbow');
+            alert('🎉 SECRET MODE ACTIVATED! 🌈\n\n You found the secret! Enjoy the rainbow mode for 10 seconds!');
+            setTimeout(() => {
+                document.body.classList.remove('rainbow');
+            }, 10000);
+        }
+
+        // Konami Code
+        let konamiCode = [];
+        const konamiSequence = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+        
+        document.addEventListener('keydown', (e) => {
+            konamiCode.push(e.key);
+            if (konamiCode.length > 10) konamiCode.shift();
+            
+            if (konamiCode.join(',') === konamiSequence.join(',')) {
+                konamiCode = [];
+                // Add bonus trees!
+                for (let i = 0; i < 5; i++) {
+                    state.tree.forest.push({
+                        date: new Date().toISOString(),
+                        duration: 45,
+                        type: 'bonus'
+                    });
+                }
+                state.tree.treesGrown += 5;
+                saveState();
+                alert('🎮 KONAMI CODE ACTIVATED!\n\n+5 Bonus Trees added to your forest! 🌳🌳🌳🌳🌳');
+                updateForest();
+            }
+        });
+
+        // ============ DASHBOARD ============
+        function updateDashboard() {
+            document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-US', { 
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+            });
+            
+            document.getElementById('dash-focus').textContent = state.todayFocusMinutes;
+            document.getElementById('dash-youtube').textContent = state.youtube.todayMinutes;
+            document.getElementById('dash-trees').textContent = state.tree.treesGrown + state.youtube.trees;
+            document.getElementById('dash-streak').textContent = state.streak;
+            
+            // Recent activity
+            const activity = document.getElementById('recent-activity');
+            const recentItems = [
+                ...state.focusHistory.slice(0, 3).map(h => ({ ...h, type: 'focus', icon: '🍅' })),
+                ...state.youtube.history.slice(0, 3).map(h => ({ ...h, type: 'youtube', icon: '📺' }))
+            ].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
+            
+            if (recentItems.length === 0) {
+                activity.innerHTML = '<p class="text-gray-500 text-center text-sm">No activity yet today</p>';
+            } else {
+                activity.innerHTML = recentItems.map(item => `
+                    <div class="flex items-center gap-3 bg-gray-800/50 p-2 rounded-lg">
+                        <span class="text-xl">${item.icon}</span>
+                        <div>
+                            <p class="text-sm font-medium">${item.duration} min ${item.type === 'focus' ? 'focused' : 'watched'}</p>
+                            <p class="text-xs text-gray-500">${item.date}</p>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            // Pending doubts preview
+            const doubtsPreview = document.getElementById('dash-doubts');
+            const pendingDoubts = state.doubts.filter(d => d.status === 'pending').slice(0, 3);
+            
+            if (pendingDoubts.length === 0) {
+                doubtsPreview.innerHTML = '<p class="text-gray-500 text-center text-sm col-span-3">No pending doubts 🎉</p>';
+            } else {
+                doubtsPreview.innerHTML = pendingDoubts.map(d => `
+                    <div class="glass rounded-xl p-3 hover-card">
+                        <p class="font-medium text-yellow-400 truncate">${escapeHtml(d.title)}</p>
+                        <p class="text-xs text-gray-500">${d.date}</p>
+                    </div>
+                `).join('');
+            }
+            
+            updateTreeVisual('dash');
+        }
+
+        // ============ HELPERS ============
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function updateAllUI() {
+            updateDashboard();
+            updateTimerDisplay();
+            updateTreeVisual('main');
+            updateYTHistory();
+            updateYTStats();
+            updateDoubtsUI();
+            updateBookmarksUI();
+            updateBrowserHistoryUI();
+            loadSettings();
+            
+            document.getElementById('total-focus').textContent = state.totalFocusMinutes;
+            document.getElementById('trees-grown').textContent = state.tree.treesGrown;
+            document.getElementById('today-sessions').textContent = state.timer.sessionsToday;
+            document.getElementById('focus-streak').textContent = state.streak;
+        }
+
+        // ============ INITIALIZATION ============
+        loadState();
+        setSession('study');
+        
+        // Auto-save every minute
+        setInterval(saveState, 60000);
+        
+        // Update browse time
+        setInterval(() => {
+            if (document.getElementById('browser-tab').classList.contains('hidden') === false) {
+                state.browseTimeToday++;
+                document.getElementById('browse-time').textContent = `${Math.round(state.browseTimeToday / 60)} min`;
+            }
+        }, 60000);
+    </script>
+</body>
+</html>
